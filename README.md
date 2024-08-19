@@ -17,3 +17,9 @@ i2c_read
         read buffer, and byte count.
         Using loop counters to prevent lock-up
         Added ACK/NAK support for last byte read
+
+Temperature
+        
+        Continuously read DS3231 temperature register, 0x11 (Celcius)
+        Convert value to Fahrenheit
+        Display Fahrenheit value
