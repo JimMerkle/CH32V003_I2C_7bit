@@ -2,14 +2,8 @@
 
 Example I2C project for the CH32V003
 
-Create a timer, TIM2, to increment at a 1us rate, providing a 16-bit timer for micro-second timing
+Implement an example I2C project that writes to DS3231 registers and then reads back and displays the register data.
 
-        // USART RX - input pin: D6
-        GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
-        GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-        GPIO_Init(GPIOD, &GPIO_InitStructure);
-        // Need BOTH TX and RX:
-        USART_InitStructure.USART_Mode = USART_Mode_Tx | USART_Mode_Rx;
 
 i2c_write
         Implement generic I2C write method that takes a 7-bit I2C address,
