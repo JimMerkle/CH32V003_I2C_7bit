@@ -6,11 +6,13 @@ Implement an example I2C project that writes to DS3231 registers and then reads 
 
 
 i2c_write
+        
         Implement generic I2C write method that takes a 7-bit I2C address,
         write buffer, and byte count.
         Using loop counters to prevent lock-up
 
 i2c_read
+        
         Implement generic I2C read method that takes a 7-bit I2C address,
         read buffer, and byte count.
         Using loop counters to prevent lock-up
