@@ -52,24 +52,34 @@ int main(void)
     IIC_Init( 100000, I2C_SELF_ADDRESS); // 80000 creates a nice looking 80KHz, 100K looks good too
 
     // Write to registers 0,1,2
-    I2C_ERROR rc = i2c_write(I2C_ADDRESS_DS3231, ds3231_data, sizeof(ds3231_data));
+    i2c_write(I2C_ADDRESS_DS3231, ds3231_data, sizeof(ds3231_data));
     //printf("%s, Write registers, RC: %d\n",__func__,rc);
 
     //Delay_Ms(1);
     // Set index to register 0
     uint8_t reg=0;
-    rc = i2c_write(I2C_ADDRESS_DS3231,&reg,sizeof(reg));
+    i2c_write(I2C_ADDRESS_DS3231,&reg,sizeof(reg));
     //printf("%s, Write reg0, RC: %d\n",__func__,rc);
 
     //Delay_Ms(1);
     // Read registers 0,1,2
     uint8_t reg_data[3]={0xFF,0xFF,0xFF};
-    rc = i2c_read(I2C_ADDRESS_DS3231, reg_data, sizeof(reg_data));
+    i2c_read(I2C_ADDRESS_DS3231, reg_data, sizeof(reg_data));
     //printf("%s, i2c_read(), RC: %d\n",__func__,rc);
     for(uint8_t i=0;i<3;i++)
         printf("%u: 0x%02X\n",i,reg_data[i]);
 
-    printf("%s Done, RC: %d\n",__func__,rc);
+    // Continuously read the temperature register 0x11 (Temp, MSB)
+    // Set index to register 0x11
+    while(1) {
+        reg=0x11; // Temperature, MSB (Celcius)
+        uint8_t temp_msb;
+        i2c_write(I2C_ADDRESS_DS3231,&reg,sizeof(reg));
+        i2c_read(I2C_ADDRESS_DS3231, &temp_msb, sizeof(temp_msb));
 
-    while(1);
+        // Convert to Fahrenheit
+        int16_t temp_f = (((int16_t)temp_msb * 18) / 10) + 32 ; // multiply by 1.8, add 32
+        printf("Temp: %dF\n",temp_f);
+        Delay_Ms(1000);
+    } // while
 }
