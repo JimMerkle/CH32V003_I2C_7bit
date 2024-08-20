@@ -219,8 +219,9 @@ int i2c_read(uint16_t i2c_address, uint8_t * data, uint8_t count)
 
     // Read data bytes
     while(count) {
+        // If this is the last byte, NAK it
+        if(count == 1) I2C1->CTLR1 &= ~(1<<10); // Clear ACK bit before data is read from DATAR
         rc = i2c_read_byte(data);
-        if(count == 2) I2C1->CTLR1 &= ~(1<<10); // Clear ACK bit - NAK next byte
         if(I2C_ERROR_SUCCESS != rc) return rc;
         data++;
         count--;

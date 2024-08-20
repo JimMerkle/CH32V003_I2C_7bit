@@ -72,14 +72,27 @@ int main(void)
     // Continuously read the temperature register 0x11 (Temp, MSB)
     // Set index to register 0x11
     while(1) {
+        // Force a temperature conversion, write 0x3C to control register, 0x0E (set CONV bit, BIT5)
+        reg=0x0E;
+        uint8_t control_reg[2] = {0x0E,0x3C};
+        i2c_write(I2C_ADDRESS_DS3231,control_reg,sizeof(control_reg));
+
+        // Read temperature registers, 0x11, 0x12
         reg=0x11; // Temperature, MSB (Celcius)
-        uint8_t temp_msb;
+        uint8_t temp_reg[2];
         i2c_write(I2C_ADDRESS_DS3231,&reg,sizeof(reg));
-        i2c_read(I2C_ADDRESS_DS3231, &temp_msb, sizeof(temp_msb));
+        i2c_read(I2C_ADDRESS_DS3231, temp_reg, sizeof(temp_reg));
+        //printf("temp_reg0: %02X, temp_reg1: %02X\n",temp_reg[0],temp_reg[1]);
+        // Combine registers into int16_t
+        uint16_t u_temp_c = ((uint16_t)temp_reg[0]<<8) + ((uint16_t)temp_reg[1]);
+        int16_t temp_c = (int16_t)u_temp_c;
+        //printf("u_temp_c: %04X\n",u_temp_c);
+        temp_c /= 64; // convert to 1/4 degree C units
+        printf("Temp: %d %d/4C\n",temp_c/4,temp_c%4); // This display method only works for positive temperature values
 
         // Convert to Fahrenheit
-        int16_t temp_f = (((int16_t)temp_msb * 18) / 10) + 32 ; // multiply by 1.8, add 32
-        printf("Temp: %dF\n",temp_f);
+        //int16_t temp_f = (((int16_t)temp_msb * 18) / 10) + 32 ; // multiply by 1.8, add 32
+        //printf("Temp: %dF\n",temp_f);
         Delay_Ms(1000);
     } // while
 }
