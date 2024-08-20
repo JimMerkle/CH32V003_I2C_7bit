@@ -20,6 +20,7 @@ i2c_read
 
 Temperature
         
-        Continuously read DS3231 temperature register, 0x11 (Celcius)
-        Convert value to Fahrenheit
-        Display Fahrenheit value
+        Each second, force a temperature conversion.
+        Read DS3231 temperature registers, 0x11 and 0x12
+        Convert two bytes into single signed 16-bit value
+        Display Celcius value
