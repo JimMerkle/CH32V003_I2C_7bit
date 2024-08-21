@@ -129,18 +129,10 @@ int i2c_send_byte(uint8_t data)
     //printf("Wait for master transmitter mode\n");
     I2C_ERROR rc = i2c_wait_transmit_complete();
     if(I2C_ERROR_SUCCESS != rc) {
-        uint32_t status = I2C_GetLastEvent(I2C1);
-        printf("%s i2c_wait_transmit_complete() 0x%06X, %d\n",__func__, status, rc);
+        //uint32_t status = I2C_GetLastEvent(I2C1);
+        //printf("%s i2c_wait_transmit_complete() 0x%06X, %d\n",__func__, status, rc);
         return rc;
     }
-
-//    //printf("Wait transmit empty\n");
-//    rc = i2c_wait_transmit_empty();
-//    if(I2C_ERROR_SUCCESS != rc) {
-//        printf("%s i2c_wait_transmit_empty() %d\n",__func__, rc);
-//        return rc;
-//    }
-
     return I2C_ERROR_SUCCESS;
 }
 
@@ -227,9 +219,76 @@ int i2c_read(uint16_t i2c_address, uint8_t * data, uint8_t count)
         count--;
     } // while
 
-    //printf("Stop\r\n");
+    //printf("Stop\n");
+    I2C_GenerateSTOP( I2C1, ENABLE );
+
+    //printf("%s Done\n",__func__);
+    return I2C_ERROR_SUCCESS;
+} // i2c_read()
+
+// Given a 7-bit I2C address, initiate a READ from device, looking ACK in response
+// to the device's address.  If device is present and provides ACK, return I2C_ERROR_SUCCESS,
+// else return I2C_ERROR_ACK.
+int i2c_device_detect(uint16_t i2c_address)
+{
+    I2C1->CTLR1 |= (1<<10); // Set ACK bit
+    //printf("%s: Wait for Not Busy\n",__func__);
+    I2C_ERROR rc = i2c_wait_not_busy();
+    if(I2C_ERROR_SUCCESS != rc) return rc;
+
+    //printf("Start\n");
+    I2C_GenerateSTART( I2C1, ENABLE );
+
+    //printf("Wait for master mode\r\n");
+    rc = i2c_wait_master_mode();
+    if(I2C_ERROR_SUCCESS != rc) return rc;
+
+    // i2c_send_byte() will error if address isn't ACK'ed
+    //printf("Send Address\n");
+    rc = i2c_send_byte((i2c_address<<1) | 1); // R/W bit set
+
+    // If Ack Failure bit set...
+    uint16_t star1 = I2C1->STAR1;
+    if(star1 & I2C_FLAG_AF) {
+        star1 &= ~I2C_FLAG_AF;
+        I2C1->STAR1 = star1; // clear AF flag
+        rc = I2C_ERROR_ACK;
+    }
+
+    I2C1->CTLR1 &= ~(1<<10); // Clear ACK bit (REQUIRED!)
+
+    //printf("%s: Stop\n",__func__);
     I2C_GenerateSTOP( I2C1, ENABLE );
 
     //printf("%s Done\r\n",__func__);
-    return I2C_ERROR_SUCCESS;
-} // i2c_read()
+    return rc == I2C_ERROR_SUCCESS ? I2C_ERROR_SUCCESS : I2C_ERROR_ACK;
+} // i2c_device_detect()
+
+// Create console display showing I2C devices present via an address map,
+// similar to the following produced by Linux's i2cdetect command:
+//      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+// 00:          -- -- -- -- -- -- -- -- -- -- -- -- --
+// 10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+// 20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+// 30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+// 40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+// 50: -- -- -- -- -- -- 56 -- -- -- -- -- -- -- -- --
+// 60: -- -- -- -- -- -- -- -- 68 -- -- -- -- -- -- --
+// 70: -- -- -- -- -- -- -- ¡ª-
+void i2c_scan(void)
+{
+    printf("     0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\n");
+    printf("00:          ");
+    for(unsigned address=3; address<=0x77; address++) {
+        // print row header, starting row address
+        if((address % 0x10) == 0) printf("\n%02X: ",address);
+        if(I2C_ERROR_SUCCESS == i2c_device_detect(address))
+            printf("%02X ",address);
+        else
+            printf("-- ");
+
+    } // for-loop
+    printf("\n");
+}
+
+

@@ -69,6 +69,17 @@ int main(void)
     for(uint8_t i=0;i<3;i++)
         printf("%u: 0x%02X\n",i,reg_data[i]);
 
+//    // Test i2c_device_detect()
+//    uint16_t address = 0x05;
+//    if(i2c_device_detect(address) != I2C_ERROR_SUCCESS) printf("%02X: GOOD!\n",address); else printf("%02X: WHOA\n",address);
+//    address = 0x68;
+//    if(i2c_device_detect(address) == I2C_ERROR_SUCCESS) printf("%02X: GOOD!\n",address); else printf("%02X: WHOA!\n",address);
+//    address = 0x10;
+//    if(i2c_device_detect(address) != I2C_ERROR_SUCCESS) printf("%02X: GOOD!\n",address); else printf("%02X: WHOA\n",address);
+
+    // Test i2c scan
+    i2c_scan();
+
     // Continuously read the temperature register 0x11 (Temp, MSB)
     // Set index to register 0x11
     while(1) {
@@ -79,7 +90,7 @@ int main(void)
 
         // Read temperature registers, 0x11, 0x12
         reg=0x11; // Temperature, MSB (Celcius)
-        uint8_t temp_reg[2];
+        uint8_t temp_reg[2] = {0,0};
         i2c_write(I2C_ADDRESS_DS3231,&reg,sizeof(reg));
         i2c_read(I2C_ADDRESS_DS3231, temp_reg, sizeof(temp_reg));
         //printf("temp_reg0: %02X, temp_reg1: %02X\n",temp_reg[0],temp_reg[1]);
