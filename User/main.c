@@ -74,7 +74,6 @@ int main(void)
     // Set index to register 0x11
     while(1) {
         // Force a temperature conversion, write 0x3C to control register, 0x0E (set CONV bit, BIT5)
-        reg=0x0E;
         uint8_t control_reg[2] = {0x0E,0x3C};
         i2c_write(I2C_ADDRESS_DS3231,control_reg,sizeof(control_reg));
 
