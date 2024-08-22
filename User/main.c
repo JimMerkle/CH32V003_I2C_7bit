@@ -55,27 +55,17 @@ int main(void)
     i2c_write(I2C_ADDRESS_DS3231, ds3231_data, sizeof(ds3231_data));
     //printf("%s, Write registers, RC: %d\n",__func__,rc);
 
-    //Delay_Ms(1);
     // Set index to register 0
     uint8_t reg=0;
     i2c_write(I2C_ADDRESS_DS3231,&reg,sizeof(reg));
     //printf("%s, Write reg0, RC: %d\n",__func__,rc);
 
-    //Delay_Ms(1);
     // Read registers 0,1,2
     uint8_t reg_data[3]={0xFF,0xFF,0xFF};
     i2c_read(I2C_ADDRESS_DS3231, reg_data, sizeof(reg_data));
     //printf("%s, i2c_read(), RC: %d\n",__func__,rc);
     for(uint8_t i=0;i<3;i++)
         printf("%u: 0x%02X\n",i,reg_data[i]);
-
-//    // Test i2c_device_detect()
-//    uint16_t address = 0x05;
-//    if(i2c_device_detect(address) != I2C_ERROR_SUCCESS) printf("%02X: GOOD!\n",address); else printf("%02X: WHOA\n",address);
-//    address = 0x68;
-//    if(i2c_device_detect(address) == I2C_ERROR_SUCCESS) printf("%02X: GOOD!\n",address); else printf("%02X: WHOA!\n",address);
-//    address = 0x10;
-//    if(i2c_device_detect(address) != I2C_ERROR_SUCCESS) printf("%02X: GOOD!\n",address); else printf("%02X: WHOA\n",address);
 
     // Test i2c scan
     i2c_scan();
@@ -101,9 +91,6 @@ int main(void)
         temp_c /= 64; // convert to 1/4 degree C units
         printf("Temp: %d %d/4C\n",temp_c/4,temp_c%4); // This display method only works for positive temperature values
 
-        // Convert to Fahrenheit
-        //int16_t temp_f = (((int16_t)temp_msb * 18) / 10) + 32 ; // multiply by 1.8, add 32
-        //printf("Temp: %dF\n",temp_f);
         Delay_Ms(1000);
     } // while
 }
